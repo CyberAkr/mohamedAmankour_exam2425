@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.mx/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title>Liste des localités</title>
+</head>
+<body>
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <div layout:fragment="content">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6" th:text="${title}">Liste des localités</h1>
+
+        <div th:if="${#lists.isEmpty(localities)}"
+             class="text-gray-500 italic text-center bg-white border rounded shadow py-6">
+            Aucune localité enregistrée.
+        </div>
+
+        <ul th:unless="${#lists.isEmpty(localities)}"
+            class="bg-white shadow border rounded divide-y divide-gray-200">
+            <li th:each="locality : ${localities}" class="px-4 py-3 flex justify-between items-center hover:bg-gray-50">
+                <span class="text-gray-700 font-medium"
+                      th:text="|${locality.postalCode} ${locality.locality}|">1000 Bruxelles</span>
+                <a th:href="@{/localities/{id}(id=${locality.id})}"
+                   class="text-blue-600 text-sm hover:underline">Voir</a>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
