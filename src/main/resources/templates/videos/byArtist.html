@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Vidéos de [[${artistName}]]</title>
+</head>
+<body>
+<h1>Vidéos des spectacles de [[${artistName}]]</h1>
+
+<div th:if="${videos.size() > 0}">
+    <ul>
+        <li th:each="video : ${videos}">
+            <h3 th:text="${video.title}">Titre</h3>
+            <iframe th:src="${video.videoUrl}" width="560" height="315" frameborder="0" allowfullscreen></iframe>
+            <hr>
+        </li>
+    </ul>
+</div>
+<div th:if="${videos.size() == 0}">
+    <p>Aucune vidéo trouvée pour cet artiste.</p>
+</div>
+
+<a th:href="@{/}">Retour à l'accueil</a>
+</body>
+</html>

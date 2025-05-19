@@ -294,5 +294,30 @@ public class Show {
                 .findFirst()
                 .orElse("Aucune date");
     }
+    @OneToMany(mappedBy = "show", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Video> videos = new ArrayList<>();
 
+    public List<Video> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(List<Video> videos) {
+        this.videos = videos;
+    }
+
+    public Show addVideo(Video video) {
+        if (!this.videos.contains(video)) {
+            this.videos.add(video);
+            video.setShow(this);
+        }
+        return this;
+    }
+
+    public Show removeVideo(Video video) {
+        if (this.videos.contains(video)) {
+            this.videos.remove(video);
+            video.setShow(null);
+        }
+        return this;
+    }
 }

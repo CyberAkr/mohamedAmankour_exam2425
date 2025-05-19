@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Ajouter une Vidéo</title>
+</head>
+<body>
+<h1>Ajouter une vidéo à un spectacle</h1>
+
+<form th:action="@{/videos/add}" method="post" th:object="${video}">
+    <label for="title">Titre :</label>
+    <input type="text" id="title" th:field="*{title}" required><br><br>
+
+    <label for="videoUrl">URL :</label>
+    <input type="text" id="videoUrl" th:field="*{videoUrl}" required><br><br>
+
+    <label for="show">Spectacle :</label>
+    <select id="show" th:field="*{show}" required>
+        <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.title}"></option>
+    </select><br><br>
+
+    <button type="submit">Ajouter</button>
+</form>
+
+<a th:href="@{/}">Retour</a>
+</body>
+</html>
