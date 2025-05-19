@@ -25,7 +25,6 @@ public class ReviewController {
 
     @Autowired
     private UserService userService;
-
     @PostMapping("/submit")
     public String submitReview(@RequestParam Long showId,
                                @RequestParam String review,
@@ -43,7 +42,7 @@ public class ReviewController {
 
         Show show = showService.get(showId.toString());
         if (show == null) {
-            return "redirect:/dev/shows";
+            return "redirect:/shows";
         }
 
         Review r = new Review();
@@ -56,7 +55,7 @@ public class ReviewController {
 
         reviewService.addReview(r);
 
-        return "redirect:/dev/shows/" + showId;
+        return "redirect:/shows/" + show.getSlug();
     }
 
     @PostMapping("/update")
@@ -73,7 +72,7 @@ public class ReviewController {
             reviewService.addReview(review);
         }
 
-        return "redirect:/dev/shows/" + review.getShow().getId();
+        return "redirect:/shows/" + (review != null ? review.getShow().getSlug() : "");
     }
 
     @PostMapping("/delete")
@@ -92,6 +91,6 @@ public class ReviewController {
             }
         }
 
-        return "redirect:/dev/shows/" + (review != null ? review.getShow().getId() : "");
+        return "redirect:/shows/" + (review != null ? review.getShow().getSlug() : "");
     }
 }

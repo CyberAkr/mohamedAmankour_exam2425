@@ -1,6 +1,7 @@
 package be.iccbxl.pid.reservationsspringboot.controller;
 
 import be.iccbxl.pid.reservationsspringboot.model.*;
+import be.iccbxl.pid.reservationsspringboot.repository.RepresentationRepository;
 import be.iccbxl.pid.reservationsspringboot.service.ReviewService;
 import be.iccbxl.pid.reservationsspringboot.service.ShowService;
 import be.iccbxl.pid.reservationsspringboot.service.TagService;
@@ -12,32 +13,34 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import be.iccbxl.pid.reservationsspringboot.repository.RepresentationRepository;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Controller
 @SessionAttributes("cart")
+@RequestMapping("/shows")
 public class ShowController {
+
     @ModelAttribute("cart")
     public Cart cart() {
         return new Cart();
     }
 
     @Autowired
-    ShowService service;
+    private ShowService showService;
+
+    @Autowired
+    private TagService tagService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Autowired
     private RepresentationRepository representationRepo;
 
-    @Autowired
-    TagService tagService;
-
-    @Autowired
-    private ReviewService reviewService; // 🔧 Ajouté pour les commentaires
-
-    @GetMapping("/dev/shows")
+    // === Liste des spectacles ===
+    @GetMapping
     public String index(@RequestParam(value = "tag", required = false) String tagLabel, Model model) {
         List<Show> shows;
         String title = "Liste des spectacles";
@@ -45,7 +48,7 @@ public class ShowController {
         if (tagLabel != null && !tagLabel.isBlank()) {
             Tag tag = tagService.findByTag(tagLabel).orElse(null);
             if (tag != null) {
-                shows = service.getByTag(tag);
+                shows = showService.getByTag(tag);
                 model.addAttribute("resultCount", shows.size());
                 title += " – Mots-clés : " + tagLabel;
             } else {
@@ -53,7 +56,7 @@ public class ShowController {
                 model.addAttribute("errorMessage", "Mot-clé introuvable");
             }
         } else {
-            shows = service.getAll();
+            shows = showService.getAll();
         }
 
         model.addAttribute("shows", shows);
@@ -63,10 +66,11 @@ public class ShowController {
         return "show/index";
     }
 
-    @GetMapping("/dev/shows/{id}")
+    // === Fiche spectacle (par ID ou slug) ===
+    @GetMapping("/{param}")
     @Transactional
-    public String show(Model model, @PathVariable("id") String id) {
-        Show show = service.getWithAssociations(id);
+    public String show(@PathVariable("param") String param, Model model) {
+        Show show = showService.getBySlugOrId(param);
         if (show == null) {
             model.addAttribute("errorMessage", "Spectacle introuvable.");
             return "error/404";
@@ -86,52 +90,49 @@ public class ShowController {
         }
 
         show.getRepresentations().forEach(rep -> Hibernate.initialize(rep.getItems()));
+        boolean canBook = show.getRepresentations().stream().anyMatch(r -> r.getAvailableSeats() > 0);
 
-        boolean canBook = show.getRepresentations().stream()
-                .anyMatch(r -> r.getAvailableSeats() > 0);
-
+        model.addAttribute("show", show);
         model.addAttribute("canBook", canBook);
         model.addAttribute("collaborateurs", collaborateurs);
         model.addAttribute("availableTags", tagService.findAll());
-        model.addAttribute("show", show);
-        model.addAttribute("title", "Fiche d'un spectacle");
-
-        // 🔧 Ajouter les reviews au modèle sans toucher le reste du contrôleur
         model.addAttribute("reviews", reviewService.getReviewsByShowId(show.getId()));
+        model.addAttribute("title", "Fiche d'un spectacle");
 
         return "show/show";
     }
 
-    @PostMapping("/shows/{id}/tags")
+    // === Ajouter un mot-clé (ADMIN uniquement) ===
+    @PostMapping("/{param}/tags")
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public String addTagToShow(@PathVariable("id") String id,
+    public String addTagToShow(@PathVariable("param") String param,
                                @RequestParam("tagId") Long tagId,
                                RedirectAttributes redirectAttributes) {
-        Show show = service.getWithAssociations(id);
+        Show show = showService.getBySlugOrId(param);
         Tag tag = tagService.find(tagId).orElse(null);
 
         if (show != null && tag != null) {
             Hibernate.initialize(show.getTags());
-            Tag[] tagsArray = show.getTags().toArray(new Tag[0]);
-            Set<Tag> updatedTags = new HashSet<>(Arrays.asList(tagsArray));
+            Set<Tag> updatedTags = new HashSet<>(show.getTags());
 
             if (!updatedTags.contains(tag)) {
                 updatedTags.add(tag);
                 show.setTags(updatedTags);
-                service.save(show);
+                showService.save(show);
                 redirectAttributes.addFlashAttribute("successMessage", "Mot-clé ajouté !");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "Ce mot-clé est déjà associé à ce spectacle.");
+                redirectAttributes.addFlashAttribute("errorMessage", "Ce mot-clé est déjà associé.");
             }
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Spectacle ou mot-clé introuvable.");
         }
 
-        return "redirect:/shows/" + id;
+        return "redirect:/shows/" + show.getSlug();
     }
 
-    @GetMapping("/shows/exclude-tag/{tag}")
+    // === Exclure un mot-clé de la liste ===
+    @GetMapping("/exclude-tag/{tag}")
     public String showsWithoutTag(@PathVariable("tag") String tagLabel, Model model) {
         Tag tag = tagService.findByTag(tagLabel).orElse(null);
         if (tag == null) {
@@ -139,28 +140,30 @@ public class ShowController {
             return "redirect:/shows";
         }
 
-        List<Show> shows = service.getWithoutTag(tag);
+        List<Show> shows = showService.getWithoutTag(tag);
         model.addAttribute("shows", shows);
         model.addAttribute("title", "Spectacles sans le mot-clé : " + tagLabel);
+        model.addAttribute("availableTags", tagService.findAll());
 
         return "show/index";
     }
 
-    @PostMapping("/shows/{id}/reserve")
-    public String reserveToCart(@PathVariable("id") String id,
+    // === Réserver une représentation ===
+    @PostMapping("/{param}/reserve")
+    public String reserveToCart(@PathVariable("param") String param,
                                 @RequestParam Long representationId,
                                 @RequestParam Long priceId,
                                 @RequestParam int quantity,
                                 @ModelAttribute("cart") Cart cart) {
 
-        Representation rep = representationRepo.findById(representationId).orElse(null); // ✅
-        Price price = rep.getShow().getPrices().stream()
+        Representation rep = representationRepo.findById(representationId).orElse(null);
+        Price price = rep != null ? rep.getShow().getPrices().stream()
                 .filter(p -> p.getId().equals(priceId))
                 .findFirst()
-                .orElse(null);
+                .orElse(null) : null;
 
         if (rep == null || price == null) {
-            return "redirect:/shows/" + id + "?error";
+            return "redirect:/shows/" + param + "?error";
         }
 
         CartItem item = new CartItem();

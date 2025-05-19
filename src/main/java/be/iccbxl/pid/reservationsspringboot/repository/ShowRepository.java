@@ -32,4 +32,10 @@ public interface ShowRepository extends CrudRepository<Show, Long> {
             "JOIN s.representations r " +
             "WHERE s.bookable = true AND r.scheduledAt > CURRENT_TIMESTAMP")
     List<Show> findUpcomingShows();
+
+    @Query("SELECT DISTINCT s FROM Show s " +
+            "LEFT JOIN FETCH s.representations r " +
+            "WHERE s.slug = :slug")
+    Optional<Show> findBySlugWithAssociations(@Param("slug") String slug);
+
 }
