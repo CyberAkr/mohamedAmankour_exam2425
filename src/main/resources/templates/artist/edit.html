@@ -31,6 +31,20 @@
                    class="text-sm text-red-500 mt-1"></p>
             </div>
 
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">Troupe</label>
+                <select th:field="*{troupe}" class="w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring focus:border-blue-400">
+                    <option value="" disabled>-- Sélectionner une troupe --</option>
+                    <option th:each="troupe : ${troupes}"
+                            th:value="${troupe}"
+                            th:text="${troupe.name}"
+                            th:selected="${troupe.id == artist.troupe?.id}">
+                    </option>
+                </select>
+                <p th:if="${#fields.hasErrors('troupe')}" th:errors="*{troupe}"
+                   class="text-sm text-red-500 mt-1"></p>
+            </div>
+
             <div class="flex items-center gap-4">
                 <button type="submit"
                         class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition">

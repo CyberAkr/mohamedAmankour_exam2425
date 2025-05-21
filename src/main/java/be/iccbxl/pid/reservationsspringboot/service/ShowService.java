@@ -62,9 +62,19 @@ public class ShowService {
         Long indice = Long.parseLong(id);
         return repository.findByIdWithAssociations(indice).orElse(null);
     }
+    public Show getBySlugOrId(String param) {
+        try {
+            Long id = Long.parseLong(param);
+            return repository.findByIdWithAssociations(id).orElse(null);
+        } catch (NumberFormatException e) {
+            return repository.findBySlugWithAssociations(param).orElse(null);
+        }
+    }
+
 
     public List<Show> getWithoutTag(Tag tag) {
         return repository.findByTagsNotContaining(tag);
     }
 
 }
+

@@ -1,80 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.mx/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:layout="http://www.ultraq.net.mx/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
       layout:decorate="~{layouts/main}">
+
 <head>
     <title th:text="${show.title}">Fiche d’un spectacle</title>
 </head>
+
 <body>
 <div class="max-w-6xl mx-auto px-6 py-12">
     <div layout:fragment="content">
 
         <!-- Titre -->
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-8" th:text="${show.title}">
-            Titre du spectacle
-        </h1>
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8" th:text="${show.title}">Titre du spectacle</h1>
 
-        <!-- Affiche & Infos Principales -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <!-- Affiche + Vidéo -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+
             <!-- Affiche -->
             <div>
-                <div th:if="${show.posterUrl}" class="aspect-[2/3] bg-white rounded-lg shadow overflow-hidden">
-                    <img th:src="@{'/images/' + ${show.posterUrl}}"
-                         th:alt="${show.title}"
+                <div th:if="${show.posterUrl}" class="aspect-[2/3] bg-white rounded-lg shadow overflow-hidden mb-4">
+                    <img th:src="@{'/images/' + ${show.posterUrl}}" th:alt="${show.title}"
                          class="object-contain w-full h-full"/>
                 </div>
                 <div th:unless="${show.posterUrl}"
-                     class="w-full aspect-[2/3] flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg shadow">
+                     class="w-full aspect-[2/3] flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg shadow mb-4">
                     Pas d’image
                 </div>
             </div>
 
-            <!-- Détails -->
-            <div class="md:col-span-2 space-y-6">
-                <!-- Lieu -->
-                <p th:if="${show.location}">
-                    <span class="font-semibold text-gray-800">Lieu de création :</span>
-                    <span th:text="${show.location.designation}" class="text-gray-700">Lieu</span>
-                </p>
-
-                <!-- Description -->
-                <div th:if="${show.description}" class="text-gray-700 leading-relaxed">
-                    <h2 class="font-semibold text-gray-800 mb-2">Description</h2>
-                    <p th:text="${show.description}">Texte du spectacle…</p>
+            <!-- Première vidéo -->
+            <div th:if="${show.videos != null and !#lists.isEmpty(show.videos)}">
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe th:src="${show.videos[0].embedUrl}" width="100%" height="315" frameborder="0"
+                            allowfullscreen class="w-full rounded-md shadow">
+                    </iframe>
                 </div>
+                <p class="mt-2 text-sm text-gray-600" th:text="${show.videos[0].title}">Titre de la vidéo</p>
+            </div>
 
-                <!-- Badges & Bouton -->
-                <div class="flex flex-wrap items-center gap-4 mt-4">
-                    <!-- Réservable / Complet -->
-                    <span th:if="${canBook}"
-                          class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                        Réservable
-                    </span>
-                    <span th:unless="${canBook}"
-                          class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                        Non réservable
-                    </span>
+            <div th:if="${#lists.isEmpty(show.videos)}" class="text-gray-500 italic">
+                Aucune vidéo pour ce spectacle.
+            </div>
+        </div>
 
-                    <!-- Prix -->
-                    <span th:if="${show.prices != null and !#lists.isEmpty(show.prices)}"
-                          class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                          th:text="${show.prices[0].price + ' €'}">
-                        9.99 €
-                    </span>
-                    <span th:if="${show.prices == null or #lists.isEmpty(show.prices)}"
-                          class="inline-block italic text-gray-400 text-sm">
-                        Prix non défini
-                    </span>
+        <!-- Description & Lieu -->
+        <div class="space-y-4 mb-12 text-gray-700">
+            <p th:if="${show.description}" th:text="${show.description}">Description du spectacle...</p>
+            <p th:if="${show.location}">
+                <span class="font-semibold">Lieu de création :</span>
+                <span th:text="${show.location.designation}"></span>
+            </p>
+        </div>
 
-                    <!-- Bouton principal Réserver -->
-                    <div th:if="${canBook}" class="ml-auto">
-                        <a th:href="@{/shows/{showId}/reserve(showId=${show.id})}"
-                           class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-                            Réserver
-                        </a>
-                    </div>
-                </div>
+        <!-- Détails réservation -->
+        <div class="flex flex-wrap items-center gap-4 mb-12">
+            <span th:if="${canBook}"
+                  class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                Réservable
+            </span>
+            <span th:unless="${canBook}"
+                  class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                Non réservable
+            </span>
+
+            <span th:if="${show.prices != null and !#lists.isEmpty(show.prices)}"
+                  class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                  th:text="${show.prices[0].price + ' €'}">
+                Prix
+            </span>
+
+            <div th:if="${canBook}" class="ml-auto">
+                <a th:href="@{/shows/{showId}/reserve(showId=${show.id})}"
+                   class="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+                    Réserver
+                </a>
             </div>
         </div>
 
@@ -87,17 +87,14 @@
                      class="p-4 rounded-lg shadow flex flex-col">
                     <p class="font-medium mb-2"
                        th:text="${#temporals.format(rep.scheduledAt,'dd-MM-yyyy HH:mm')}">
-                        12-10-2025 20:30
+                        Date
                     </p>
                     <p th:if="${rep.availableSeats > 0}"
                        class="mt-auto font-semibold text-gray-800"
                        th:text="${rep.availableSeats + ' place(s) dispo'}">
-                        100 place(s) dispo
+                        Places
                     </p>
-                    <p th:unless="${rep.availableSeats > 0}"
-                       class="mt-auto italic">
-                        Complet
-                    </p>
+                    <p th:unless="${rep.availableSeats > 0}" class="mt-auto italic">Complet</p>
                 </div>
             </div>
         </section>
@@ -109,36 +106,32 @@
                 <div th:if="${collaborateurs['auteur']}">
                     <h3 class="font-semibold mb-1">Auteur(s)</h3>
                     <ul class="list-disc list-inside">
-                        <li th:each="a : ${collaborateurs['auteur']}"
-                            th:text="${a.firstname + ' ' + a.lastname}">
-                            Nom
-                        </li>
+                        <li th:each="a : ${collaborateurs['auteur']}" th:text="${a.firstname + ' ' + a.lastname}"></li>
                     </ul>
                 </div>
                 <div th:if="${collaborateurs['scénographe']}">
                     <h3 class="font-semibold mb-1">Metteur(s) en scène</h3>
                     <ul class="list-disc list-inside">
-                        <li th:each="s : ${collaborateurs['scénographe']}"
-                            th:text="${s.firstname + ' ' + s.lastname}">
-                            Nom
-                        </li>
+                        <li th:each="s : ${collaborateurs['scénographe']}" th:text="${s.firstname + ' ' + s.lastname}"></li>
                     </ul>
                 </div>
                 <div th:if="${collaborateurs['comédien']}">
                     <h3 class="font-semibold mb-1">Distribution</h3>
                     <ul class="list-disc list-inside">
-                        <li th:each="c : ${collaborateurs['comédien']}"
-                            th:text="${c.firstname + ' ' + c.lastname}">
-                            Nom
-                        </li>
+                        <li th:each="c : ${collaborateurs['comédien']}" th:text="${c.firstname + ' ' + c.lastname}"></li>
                     </ul>
                 </div>
             </div>
         </section>
 
-        <!-- Mots-clés & Formulaire d’ajout -->
+        <!-- Retour -->
+        <div class="mt-8">
+            <a th:href="@{/shows}" class="text-blue-600 hover:underline">← Retour à la liste</a>
+        </div>
+        <!-- Mots-clés associés -->
         <section class="mb-12">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Mots-clés associés</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🏷️ Mots-clés associés</h2>
+
             <div class="flex flex-wrap gap-2 mb-4">
                 <a th:each="tag : ${show.tags}"
                    th:href="@{/shows(tag=${tag.tag})}"
@@ -146,115 +139,102 @@
                    class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium hover:bg-yellow-200">
                 </a>
             </div>
+
             <p th:if="${show.tags == null or #lists.isEmpty(show.tags)}"
                class="italic text-gray-500 mb-4">
-                Aucun mot-clé.
+                Aucun mot-clé associé.
             </p>
 
-            <!-- Lien “Voir sans ce mot-clé” -->
-            <div class="mt-4">
-                <p class="italic text-sm text-gray-600 mb-2">Voir les spectacles sans ce mot-clé :</p>
-                <div class="flex flex-wrap gap-2">
-                    <a th:each="tag : ${show.tags}"
-                       th:href="@{/shows/exclude-tag/{tag}(tag=${tag.tag})}"
-                       th:text="'Sans ' + ${tag.tag}"
-                       class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium hover:bg-red-200">
-                    </a>
-                </div>
-            </div>
-
-            <!-- Formulaire d’ajout (admin only) -->
-            <div sec:authorize="hasRole('ADMIN')" class="mt-6">
-                <form th:action="@{/shows/{id}/tags(id=${show.id})}"
-                      method="post"
+            <!-- Ajout de mot-clé (admin only) -->
+            <div sec:authorize="hasRole('ADMIN')" class="mt-4">
+                <form th:action="@{/shows/{id}/tags(id=${show.id})}" method="post"
                       class="flex items-center space-x-2">
-                    <select name="tagId"
-                            required
-                            class="border rounded px-2 py-1 text-sm">
+                    <select name="tagId" required class="border rounded px-2 py-1 text-sm">
                         <option value="" disabled selected>Ajouter un mot-clé</option>
                         <option th:each="t : ${availableTags}"
                                 th:value="${t.id}"
-                                th:text="${t.tag}"></option>
+                                th:text="${t.tag}">
+                        </option>
                     </select>
                     <button type="submit"
-                            class="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition">
+                            class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm">
                         Ajouter
                     </button>
                 </form>
             </div>
         </section>
-        <section>
-            <!-- Commentaires -->
-            <div class="mb-12">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Commentaires</h2>
+        <!-- Commentaires -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">💬 Commentaires</h2>
 
-                <!-- Aucun commentaire -->
-                <div th:if="${#lists.isEmpty(reviews)}" class="italic text-gray-500 mb-6">
-                    Aucun commentaire pour ce spectacle pour l’instant.
-                </div>
+            <!-- Aucun commentaire -->
+            <div th:if="${#lists.isEmpty(reviews)}" class="italic text-gray-500 mb-6">
+                Aucun commentaire pour ce spectacle pour l’instant.
+            </div>
 
-                <!-- Liste des commentaires -->
-                <div th:each="review : ${reviews}" class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <strong th:text="${review.user.login}" class="text-gray-800"></strong>
-                            <span class="text-yellow-600 text-sm font-semibold ml-2" th:text="'⭐ ' + ${review.stars} + '/5'">⭐ 4/5</span>
-                        </div>
-
-                        <!-- Bouton de suppression visible si auteur OU admin -->
-                        <form th:if="${#authentication.name == review.user.login or #authorization.expression('hasRole(''ADMIN'')')}"
-                              th:action="@{/reviews/delete}" method="post"
-                              onsubmit="return confirm('Voulez-vous vraiment supprimer ce commentaire ?');">
-                            <input type="hidden" name="reviewId" th:value="${review.id}" />
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <button type="submit" class="text-red-600 hover:text-red-800 text-lg ml-2" title="Supprimer">
-                                🗑️
-                            </button>
-                        </form>
+            <!-- Liste des commentaires -->
+            <div th:each="review : ${reviews}" class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm mb-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <strong th:text="${review.user.login}" class="text-gray-800"></strong>
+                        <span class="text-yellow-600 text-sm font-semibold ml-2"
+                              th:text="'⭐ ' + ${review.stars} + '/5'">⭐ 4/5</span>
                     </div>
 
-                    <p class="text-gray-700 mb-2" th:text="${review.review}">Contenu du commentaire</p>
-                    <small class="text-gray-400" th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy HH:mm')}">Date</small>
-                </div>
-
-                <!-- Formulaire de commentaire -->
-                <div th:if="${#authorization.expression('isAuthenticated()')}" class="mt-8">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Laisser un commentaire</h3>
-                    <form th:action="@{/reviews/submit}" method="post" class="space-y-4 bg-gray-50 p-6 rounded shadow border border-gray-200">
-                        <input type="hidden" name="showId" th:value="${show.id}" />
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                        <div>
-                            <label for="review" class="block font-medium text-gray-700">Votre commentaire</label>
-                            <textarea id="review" name="review" class="w-full border rounded px-3 py-2 mt-1 text-sm" rows="4" required></textarea>
-                        </div>
-
-                        <div>
-                            <label for="stars" class="block font-medium text-gray-700">Note (1 à 5)</label>
-                            <input type="number" id="stars" name="stars" min="1" max="5" class="w-20 border rounded px-2 py-1 mt-1 text-sm" required />
-                        </div>
-
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                            Envoyer
+                    <!-- Supprimer si auteur ou admin -->
+                    <form th:if="${#authentication.name == review.user.login or #authorization.expression('hasRole(''ADMIN'')')}"
+                          th:action="@{/reviews/delete}" method="post"
+                          onsubmit="return confirm('Voulez-vous vraiment supprimer ce commentaire ?');">
+                        <input type="hidden" name="reviewId" th:value="${review.id}"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="text-red-600 hover:text-red-800 text-lg ml-2" title="Supprimer">
+                            🗑️
                         </button>
                     </form>
                 </div>
 
-                <!-- Message pour les visiteurs -->
-                <div th:unless="${#authorization.expression('isAuthenticated()')}" class="mt-6 text-gray-600">
-                    🔒 <a th:href="@{/login}" class="text-blue-600 hover:underline">Connectez-vous</a> pour poster un commentaire.
-                </div>
+                <p class="text-gray-700 mb-2" th:text="${review.review}">Contenu</p>
+                <small class="text-gray-400"
+                       th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy HH:mm')}">Date</small>
+            </div>
+
+            <!-- Formulaire ajout (authentifié seulement) -->
+            <div th:if="${#authorization.expression('isAuthenticated()')}" class="mt-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Laisser un commentaire</h3>
+                <form th:action="@{/reviews/submit}" method="post"
+                      class="space-y-4 bg-gray-50 p-6 rounded shadow border border-gray-200">
+                    <input type="hidden" name="showId" th:value="${show.id}"/>
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <div>
+                        <label for="review" class="block font-medium text-gray-700">Votre commentaire</label>
+                        <textarea id="review" name="review" rows="4" required
+                                  class="w-full border rounded px-3 py-2 mt-1 text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="stars" class="block font-medium text-gray-700">Note (1 à 5)</label>
+                        <input type="number" id="stars" name="stars" min="1" max="5"
+                               class="w-20 border rounded px-2 py-1 mt-1 text-sm" required/>
+                    </div>
+
+                    <button type="submit"
+                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                        Envoyer
+                    </button>
+                </form>
+            </div>
+
+            <!-- Message invité -->
+            <div th:unless="${#authorization.expression('isAuthenticated()')}" class="mt-6 text-gray-600">
+                🔒 <a th:href="@{/login}" class="text-blue-600 hover:underline">Connectez-vous</a> pour commenter.
             </div>
         </section>
-        <!-- Retour -->
-        <div class="mt-8">
-            <a th:href="@{/shows}"
-               class="text-blue-600 hover:underline">
-                ← Retour à la liste
-            </a>
-        </div>
+
+
 
     </div>
 </div>
+
 </body>
 </html>

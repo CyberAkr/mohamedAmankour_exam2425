@@ -11,7 +11,6 @@ public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
 
 
     private String title;
@@ -22,4 +21,13 @@ public class Video {
     @ManyToOne
     @JoinColumn(name = "show_id", nullable = false)
     private Show show;
+
+    @Transient
+    public String getEmbedUrl() {
+        if (videoUrl != null && videoUrl.contains("watch?v=")) {
+            return videoUrl.replace("watch?v=", "embed/");
+        }
+        return videoUrl;
+    }
+
 }

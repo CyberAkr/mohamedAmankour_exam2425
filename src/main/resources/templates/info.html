@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Infos pratiques</title>
+</head>
+<body>
+<div layout:fragment="content" class="max-w-5xl mx-auto px-6 py-10 space-y-10">
+
+    <h1 class="text-4xl font-extrabold text-gray-900">Infos pratiques</h1>
+
+    <!-- Horaires -->
+    <section class="bg-white rounded-lg shadow-md p-6 border">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">🕒 Horaires d'ouverture</h2>
+        <ul class="text-gray-700 list-disc list-inside space-y-1">
+            <li>Lundi au vendredi : 10h - 18h</li>
+            <li>Samedi : 12h - 17h</li>
+            <li>Fermé les dimanches et jours fériés</li>
+        </ul>
+    </section>
+
+    <!-- Billetterie -->
+    <section class="bg-white rounded-lg shadow-md p-6 border">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">🎟️ Billetterie</h2>
+        <ul class="text-gray-700 list-disc list-inside space-y-1">
+            <li>Réservation en ligne 24h/24 via notre site</li>
+            <li>Billets également disponibles à l’accueil du théâtre</li>
+            <li>Les réservations doivent être confirmées par paiement dans les 48h</li>
+        </ul>
+    </section>
+
+    <!-- Remboursement -->
+    <section class="bg-white rounded-lg shadow-md p-6 border">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">💸 Remboursements</h2>
+        <p class="text-gray-700">
+            Les billets ne sont ni remboursables ni échangeables, sauf en cas d'annulation du spectacle.
+            Dans ce cas, le remboursement se fait automatiquement par le mode de paiement initial.
+        </p>
+    </section>
+
+    <!-- Accès -->
+    <section class="bg-white rounded-lg shadow-md p-6 border">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">📍 Accès au théâtre</h2>
+        <ul class="text-gray-700 list-disc list-inside space-y-1">
+            <li>Métro : Ligne 1 – arrêt Théâtre Central</li>
+            <li>Tram : Ligne 4 ou 7 – arrêt Place des Arts</li>
+            <li>Parking : Vinci Park – Théâtre (payant)</li>
+        </ul>
+    </section>
+
+    <!-- Contact -->
+    <section class="bg-white rounded-lg shadow-md p-6 border">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">📞 Contact</h2>
+        <ul class="text-gray-700 space-y-2">
+            <li><strong>Téléphone :</strong> 02 123 45 67</li>
+            <li><strong>Email :</strong> <a href="mailto:contact@theatre-reservation.be" class="text-blue-600 hover:underline">contact@theatre-reservation.be</a></li>
+            <li><strong>Adresse :</strong> 123 Rue du Théâtre, 1000 Bruxelles</li>
+        </ul>
+    </section>
+
+</div>
+</body>
+</html>

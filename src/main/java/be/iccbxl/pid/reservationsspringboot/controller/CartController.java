@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @SessionAttributes("cart")
+@RequestMapping("/cart") // ✅ Regroupe toutes les routes sous /cart
 public class CartController {
+
     @Autowired
     private StripeService stripeService;
 
@@ -43,22 +44,16 @@ public class CartController {
         return new Cart();
     }
 
-    @GetMapping("/reservation/confirmation")
-    public String confirmation(HttpSession session, Model model) {
-        Long id = (Long) session.getAttribute("lastReservationId");
-
-        if (id == null) {
-            return "redirect:/shows"; // fallback si pas de réservation en session
-        }
-
-        Reservation reservation = reservationService.getReservation(id);
-        model.addAttribute("reservation", reservation);
-
-        return "reservation/confirmation";
+    // ✅ Affichage panier
+    @GetMapping("/view")
+    public String viewCart(Model model, @ModelAttribute("cart") Cart cart) {
+        model.addAttribute("items", cart.getItems());
+        model.addAttribute("total", cart.getTotal());
+        return "cart/view";
     }
 
-
-    @PostMapping("/cart/add")
+    // ✅ Ajout item dans panier
+    @PostMapping("/add")
     public String addToCart(@RequestParam Long representationId,
                             @RequestParam Long priceId,
                             @RequestParam(defaultValue = "1") int quantity,
@@ -74,27 +69,21 @@ public class CartController {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         item.setLabel(representation.getScheduledAt().format(formatter));
-
         item.setUnitPrice(price.getPrice());
 
         cart.addItem(item);
         return "redirect:/cart/view";
     }
 
-    @GetMapping("/cart/view")
-    public String viewCart(Model model, @ModelAttribute("cart") Cart cart) {
-        model.addAttribute("items", cart.getItems());
-        model.addAttribute("total", cart.getTotal());
-        return "cart/view";
-    }
-
-    @PostMapping("/cart/delete/{index}")
+    // ✅ Suppression d’un item
+    @PostMapping("/delete/{index}")
     public String deleteItem(@PathVariable int index, @ModelAttribute("cart") Cart cart) {
         cart.removeItem(index);
         return "redirect:/cart/view";
     }
 
-    @PostMapping("/cart/checkout")
+    // ✅ Checkout Stripe
+    @PostMapping("/checkout")
     public String checkout(@ModelAttribute("cart") Cart cart, Principal principal, HttpSession session) {
         if (cart.getItems().isEmpty()) {
             return "redirect:/cart/view?empty=true";
@@ -105,7 +94,7 @@ public class CartController {
             return "redirect:/login";
         }
 
-        //  Créer une réservation "PENDING" et l'enregistrer en base
+        // Création réservation
         Reservation reservation = new Reservation();
         reservation.setUser(user);
         reservation.setBookingDate(LocalDateTime.now());
@@ -124,12 +113,11 @@ public class CartController {
             }
         }
 
-        reservationService.save(reservation); // Enregistrer en BDD directement
-        session.setAttribute("lastReservationId", reservation.getId()); // Stocker ID dans la session
+        reservationService.save(reservation);
+        session.setAttribute("lastReservationId", reservation.getId());
 
-        // Créer la session Stripe avec les items
+        // Stripe
         List<SessionCreateParams.LineItem> lineItems = new ArrayList<>();
-
         for (CartItem item : cart.getItems()) {
             lineItems.add(
                     SessionCreateParams.LineItem.builder()
@@ -157,5 +145,17 @@ public class CartController {
             return "redirect:/cart/view?error=stripe";
         }
     }
-}
 
+    // ✅ Confirmation de réservation
+    @GetMapping("/confirmation")
+    public String confirmation(HttpSession session, Model model) {
+        Long id = (Long) session.getAttribute("lastReservationId");
+        if (id == null) {
+            return "redirect:/shows";
+        }
+
+        Reservation reservation = reservationService.getReservation(id);
+        model.addAttribute("reservation", reservation);
+        return "reservation/confirmation";
+    }
+}

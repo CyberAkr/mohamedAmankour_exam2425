@@ -1,26 +1,32 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/admin}">
+
 <head>
-    <title>Ajouter une Vidéo</title>
+    <title>Ajouter une vidéo</title>
 </head>
+
 <body>
-<h1>Ajouter une vidéo à un spectacle</h1>
+<section layout:fragment="content">
+    <h1>Ajouter une vidéo à un spectacle</h1>
 
-<form th:action="@{/videos/add}" method="post" th:object="${video}">
-    <label for="title">Titre :</label>
-    <input type="text" id="title" th:field="*{title}" required><br><br>
+    <form th:action="@{/videos/add}" method="post" th:object="${video}">
+        <label for="title">Titre :</label>
+        <input type="text" id="title" th:field="*{title}" required><br><br>
 
-    <label for="videoUrl">URL :</label>
-    <input type="text" id="videoUrl" th:field="*{videoUrl}" required><br><br>
+        <label for="videoUrl">URL :</label>
+        <input type="text" id="videoUrl" th:field="*{videoUrl}" required><br><br>
 
-    <label for="show">Spectacle :</label>
-    <select id="show" th:field="*{show}" required>
-        <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.title}"></option>
-    </select><br><br>
+        <label for="show">Spectacle :</label>
+        <select id="show" th:field="*{show}" required>
+            <option th:each="s : ${shows}" th:value="${s.id}" th:text="${s.title}"></option>
+        </select><br><br>
 
-    <button type="submit">Ajouter</button>
-</form>
+        <button type="submit">Ajouter</button>
+    </form>
 
-<a th:href="@{/}">Retour</a>
+    <a th:href="@{/}">Retour</a>
+</section>
 </body>
 </html>

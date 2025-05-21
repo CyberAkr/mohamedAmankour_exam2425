@@ -28,6 +28,11 @@ public class Artist {
     @ManyToMany(mappedBy = "artists")
     private List<Type> types = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "troupe_id")
+    private Troupe troupe;
+
+
     // Problème avec lombok !
     public Long getId() {
         return id;
@@ -62,6 +67,8 @@ public class Artist {
 
         return this;
     }
+
+
 
     @Override
     public String toString() {
