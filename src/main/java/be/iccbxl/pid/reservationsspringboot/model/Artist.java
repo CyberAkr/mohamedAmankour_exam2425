@@ -68,6 +68,8 @@ public class Artist {
         return this;
     }
 
+
+
     @Override
     public String toString() {
         return firstname + " " + lastname;
